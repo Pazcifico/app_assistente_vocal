@@ -31,39 +31,103 @@ class _TccVisionAppState extends State<TccVisionApp> {
   String lastObject = "";
   DateTime lastSpeechTime = DateTime.now();
 
-  // Variáveis para as dimensões da imagem (Resolve o erro Undefined name)
   double imageWidthOriginal = 1024.0;
   double imageHeightOriginal = 1024.0;
 
   final Map<String, String> tradutor = {
-    "backpack": "mochila",
-    "book": "livro",
-    "cell phone": "celular",
-    "chair": "cadeira",
-    "cup": "copo",
-    "laptop": "notebook",
-    "keyboard": "teclado",
-    "mouse": "mouse",
-    "remote": "controle remoto",
-    "tv": "televisão",
-    "bottle": "garrafa",
-    "car": "carro",
-    "motorcycle": "moto",
-    "dog": "cachorro",
-    "cat": "gato",
-    "bird": "pássaro",
     "apple": "maçã",
+    "backpack": "mochila",
+    "ball": "bola",
     "banana": "banana",
     "bed": "cama",
-    "sink": "pia",
-    "refrigerator": "geladeira",
-    "scissors": "tesoura",
-    "toothbrush": "escova de dente",
-    "clock": "relógio",
-    "spoon": "colher",
-    "fork": "garfo",
-    "knife": "faca",
+    "bench": "banco",
+    "bicycle": "bicicleta",
+    "bird": "pássaro",
+    "boat": "barco",
+    "book": "livro",
+    "bottle": "garrafa",
     "bowl": "tigela",
+    "broccoli": "brócolis",
+    "can": "lata",
+    "cake": "bolo",
+    "car": "carro",
+    "cat": "gato",
+    "cell phone": "celular",
+    "cellphone": "celular",
+    "chair": "cadeira",
+    "clock": "relógio",
+    "couch": "sofá",
+    "cow": "vaca",
+    "cup": "copo",
+    "dining table": "mesa",
+    "dog": "cachorro",
+    "door": "porta",
+    "door mat": "tapete",
+    "donut": "rosquinha",
+    "dustpan": "pá",
+    "envelope": "envelope",
+    "fan": "ventilador",
+    "fire hydrant": "hidrante",
+    "flag pole": "mastro",
+    "folder": "pasta",
+    "fork": "garfo",
+    "frisbee": "frisbee",
+    "gate": "portão",
+    "hair drier": "secador",
+    "handbag": "bolsa",
+    "horse": "cavalo",
+    "hot dog": "cachorro-quente",
+    "key": "chave",
+    "keyboard": "teclado",
+    "kite": "pipa",
+    "knife": "faca",
+    "laptop": "notebook",
+    "microwave": "micro-ondas",
+    "motorcycle": "moto",
+    "mouse": "mouse",
+    "orange": "laranja",
+    "outlet": "tomada",
+    "oven": "forno",
+    "paper clip": "clipe",
+    "parking meter": "parquímetro",
+    "pen": "caneta",
+    "pillow": "travesseiro",
+    "pizza": "pizza",
+    "potted plant": "planta",
+    "pottedplant": "planta",
+    "power switch": "interruptor",
+    "refrigerator": "geladeira",
+    "remote": "controle",
+    "sandwich": "sanduíche",
+    "scissor": "tesoura",
+    "scissors": "tesoura",
+    "shoes": "sapato",
+    "sheep": "ovelha",
+    "sink": "pia",
+    "skateboard": "skate",
+    "sofa": "sofá",
+    "spoon": "colher",
+    "sports ball": "bola",
+    "stapler": "grampeador",
+    "star": "estrela",
+    "stair": "escada",
+    "stop sign": "pare",
+    "suitcase": "mala",
+    "surfboard": "prancha",
+    "tv": "TV",
+    "teddy bear": "urso",
+    "tennis racket": "raquete",
+    "tie": "gravata",
+    "toaster": "torradeira",
+    "toilet": "vaso",
+    "toothbrush": "escova",
+    "traffic light": "sinal",
+    "trash can": "lixeira",
+    "triangle": "triângulo",
+    "truck": "caminhão",
+    "umbrella": "guarda-chuva",
+    "vase": "vaso",
+    "wine glass": "taça",
   };
 
   @override
@@ -87,7 +151,6 @@ class _TccVisionAppState extends State<TccVisionApp> {
       enableAudio: false,
     );
     await controller.initialize();
-
     await vision.loadYoloModel(
       labels: 'assets/labels.txt',
       modelPath: 'assets/best_int8.tflite',
@@ -95,11 +158,9 @@ class _TccVisionAppState extends State<TccVisionApp> {
       numThreads: 4,
       useGpu: true,
     );
-
     controller.startImageStream((image) {
       if (!isDetecting && !isPaused) {
         isDetecting = true;
-        // Atualiza as dimensões baseada no frame real da câmera
         imageWidthOriginal = image.width.toDouble();
         imageHeightOriginal = image.height.toDouble();
         runInference(image);
@@ -122,9 +183,7 @@ class _TccVisionAppState extends State<TccVisionApp> {
       setState(() {
         yoloResults = result;
       });
-
       var obj = result.reduce((a, b) {
-        // CORREÇÃO: Adicionado .toDouble() para resolver o erro de int vs double
         double areaA =
             (a['box'][2].toDouble() - a['box'][0].toDouble()) *
             (a['box'][3].toDouble() - a['box'][1].toDouble());
@@ -139,8 +198,7 @@ class _TccVisionAppState extends State<TccVisionApp> {
       double area =
           (obj['box'][2].toDouble() - obj['box'][0].toDouble()) *
           (obj['box'][3].toDouble() - obj['box'][1].toDouble());
-      double totalArea = image.width.toDouble() * image.height.toDouble();
-      double ratio = area / totalArea;
+      double ratio = area / (image.width * image.height);
 
       String tag = obj['tag'].toString().toLowerCase();
       String nome = tradutor[tag] ?? tag;
@@ -149,7 +207,16 @@ class _TccVisionAppState extends State<TccVisionApp> {
               ? "à esquerda"
               : (xCenter < 2 * image.width / 3 ? "à frente" : "à direita");
 
-      processAccessibility(nome, pos, ratio);
+      // Lógica de Distância
+      String dist = "longe";
+      if (ratio > 0.35)
+        dist = "muito perto";
+      else if (ratio > 0.10)
+        dist = "perto";
+      else if (ratio > 0.03)
+        dist = "a média distância";
+
+      processAccessibility(nome, pos, dist, ratio);
     } else {
       setState(() {
         yoloResults = [];
@@ -158,18 +225,22 @@ class _TccVisionAppState extends State<TccVisionApp> {
     isDetecting = false;
   }
 
-  void processAccessibility(String nome, String pos, double ratio) async {
+  void processAccessibility(
+    String nome,
+    String pos,
+    String dist,
+    double ratio,
+  ) async {
     var agora = DateTime.now();
-    bool isDanger = ratio > 0.35;
-
-    if (isDanger) {
+    if (ratio > 0.35) {
       Vibration.vibrate(duration: 500);
       await tts.speak("Cuidado! $nome muito perto!");
     } else {
-      if (nome != lastObject ||
+      String anuncio = "$nome $pos, $dist";
+      if (anuncio != lastObject ||
           agora.difference(lastSpeechTime).inSeconds > 5) {
-        await tts.speak("$nome $pos");
-        lastObject = nome;
+        await tts.speak(anuncio);
+        lastObject = anuncio;
         lastSpeechTime = agora;
       }
     }
@@ -184,12 +255,9 @@ class _TccVisionAppState extends State<TccVisionApp> {
 
   @override
   Widget build(BuildContext context) {
-    if (!controller.value.isInitialized) {
+    if (!controller.value.isInitialized)
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
     final size = MediaQuery.of(context).size;
-
     return Scaffold(
       body: GestureDetector(
         onTap: () => tts.speak("Sistema ativo. Olhando para $lastObject"),
@@ -201,7 +269,6 @@ class _TccVisionAppState extends State<TccVisionApp> {
           fit: StackFit.expand,
           children: [
             CameraPreview(controller),
-            // Desenha as caixas (visual para sua defesa do TCC)
             ...yoloResults.map((res) {
               return Positioned(
                 left: res["box"][0] * (size.width / imageWidthOriginal),
@@ -212,7 +279,7 @@ class _TccVisionAppState extends State<TccVisionApp> {
                     border: Border.all(color: Colors.yellow, width: 2),
                   ),
                   child: Text(
-                    "${res["tag"]} ${(res["box"][4] * 100).toStringAsFixed(0)}%",
+                    "${tradutor[res["tag"].toLowerCase()] ?? res["tag"]} ${(res["box"][4] * 100).toStringAsFixed(0)}%",
                     style: const TextStyle(
                       color: Colors.yellow,
                       fontWeight: FontWeight.bold,
@@ -221,7 +288,7 @@ class _TccVisionAppState extends State<TccVisionApp> {
                   ),
                 ),
               );
-            }), // CORREÇÃO: Removido .toList() desnecessário
+            }),
           ],
         ),
       ),
