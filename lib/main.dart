@@ -43,67 +43,16 @@ class _TccVisionAppState extends State<TccVisionApp> {
   double imageHeightOriginal = 1024;
 
   final Map<String, String> tradutor = {
-    "apple": "maçã",
-    "backpack": "mochila",
-    "ball": "bola",
-    "banana": "banana",
-    "bed": "cama",
-    "bench": "banco",
-    "bicycle": "bicicleta",
-    "bird": "pássaro",
-    "boat": "barco",
-    "book": "livro",
-    "bottle": "garrafa",
-    "bowl": "tigela",
-    "broccoli": "brócolis",
-    "can": "lata",
-    "cake": "bolo",
-    "car": "carro",
-    "cat": "gato",
     "cell phone": "celular",
+    "person": "pessoa",
     "chair": "cadeira",
-    "clock": "relógio",
-    "couch": "sofá",
-    "cow": "vaca",
+    "bottle": "garrafa",
     "cup": "copo",
-    "dog": "cachorro",
-    "door": "porta",
-    "fork": "garfo",
-    "frisbee": "frisbee",
-    "handbag": "bolsa",
-    "horse": "cavalo",
-    "keyboard": "teclado",
-    "knife": "faca",
     "laptop": "notebook",
-    "microwave": "micro-ondas",
-    "motorcycle": "moto",
-    "mouse": "mouse",
-    "orange": "laranja",
-    "oven": "forno",
-    "pen": "caneta",
-    "pizza": "pizza",
-    "potted plant": "planta",
-    "refrigerator": "geladeira",
-    "remote": "controle",
-    "sandwich": "sanduíche",
-    "scissors": "tesoura",
-    "sink": "pia",
-    "sofa": "sofá",
-    "spoon": "colher",
-    "sports ball": "bola",
-    "stapler": "grampeador",
-    "stop sign": "pare",
-    "suitcase": "mala",
     "tv": "TV",
-    "teddy bear": "urso",
-    "toilet": "vaso",
-    "toothbrush": "escova",
-    "traffic light": "sinal",
-    "trash can": "lixeira",
-    "truck": "caminhão",
-    "umbrella": "guarda-chuva",
-    "vase": "vaso",
-    "wine glass": "taça",
+    "book": "livro",
+    "mouse": "mouse",
+    "keyboard": "teclado",
   };
 
   @override
@@ -135,7 +84,7 @@ class _TccVisionAppState extends State<TccVisionApp> {
 
     await vision.loadYoloModel(
       labels: 'assets/labels.txt',
-      modelPath: 'assets/best_int8.tflite',
+      modelPath: 'assets/best_float32.tflite',
       modelVersion: "yolov8",
       numThreads: 2,
       useGpu: true,
@@ -243,7 +192,9 @@ class _TccVisionAppState extends State<TccVisionApp> {
   @override
   void dispose() {
     controller?.dispose();
+
     vision.closeYoloModel();
+
     super.dispose();
   }
 
