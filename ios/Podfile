@@ -1,37 +1,28 @@
 platform :ios, '13.0'
 
-prepare_command = 'ruby -e "require \'fileutils\'; FileUtils.touch(\'Podfile.lock\')"'
+import_path = File.expand_path(File.join(File.dirname(__FILE__), '..', '..', 'flutter', 'packages', 'flutter_tools', 'bin', 'podhelper.rb'))
+
+if File.exist?(import_path)
+  require import_path
+else  # Fallback para o ambiente do servidor
+  require 'podhelper'
+end
 
 target 'Runner' do
   use_frameworks!
   use_test_with_dev_pods = false
 
-  # Isso aqui é o que faz as bibliotecas do Flutter funcionarem no iPhone
-  line_to_add = "File.join(File.dirname(File.expand_path(__FILE__)), '..', '..', 'flutter')"
   
-  # Inclui as dependências do Flutter (Câmera, Voz, IA)
-  install_all_flutter_pods(File.join(File.dirname(File.expand_path(__FILE__)), '..', '..', 'flutter'))
+  flutter_install_all_ios_pods File.dirname(File.expand_path(__FILE__))
 end
 
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
     target.build_configurations.each do |config|
-      # Garante que o app rode em iPhones novos e antigos
+      # Garante compatibilidade total
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
       config.build_settings['ENABLE_BITCODE'] = 'NO'
     end
   end
-end
-
-# Função auxiliar que o Flutter usa
-def install_all_flutter_pods(flutter_application_path)
-  podfile_dir = File.dirname(File.expand_path(__FILE__))
-  symlink_path = File.expand_path(File.join(podfile_dir, '.symlinks', 'plugins'))
-  FileUtils.mkdir_p(symlink_path)
-  
-  script_path = File.join(flutter_application_path, 'packages', 'flutter_tools', 'bin', 'podhelper.rb')
-  require script_path
-  flutter_ios_podfile_setup
-  flutter_install_all_ios_pods File.dirname(File.expand_path(__FILE__))
 end
