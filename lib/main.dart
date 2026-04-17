@@ -21,7 +21,7 @@ class TccVisionApp extends StatefulWidget {
 }
 
 class _TccVisionAppState extends State<TccVisionApp> {
-  late CameraController controller;
+  CameraController? controller; // Opcional para evitar erro de inicialização
   late FlutterVision vision;
   late FlutterTts tts;
 
@@ -150,7 +150,10 @@ class _TccVisionAppState extends State<TccVisionApp> {
       ResolutionPreset.high,
       enableAudio: false,
     );
-    await controller.initialize();
+
+    // CORREÇÃO: Usando ?. para chamar o método de forma segura
+    await controller?.initialize();
+
     await vision.loadYoloModel(
       labels: 'assets/labels.txt',
       modelPath: 'assets/best_int8.tflite',
@@ -158,7 +161,9 @@ class _TccVisionAppState extends State<TccVisionApp> {
       numThreads: 4,
       useGpu: true,
     );
-    controller.startImageStream((image) {
+
+    // CORREÇÃO: Usando ?. para chamar o método de forma segura
+    controller?.startImageStream((image) {
       if (!isDetecting && !isPaused) {
         isDetecting = true;
         imageWidthOriginal = image.width.toDouble();
@@ -207,7 +212,6 @@ class _TccVisionAppState extends State<TccVisionApp> {
               ? "à esquerda"
               : (xCenter < 2 * image.width / 3 ? "à frente" : "à direita");
 
-      // Lógica de Distância
       String dist = "longe";
       if (ratio > 0.35)
         dist = "muito perto";
@@ -248,15 +252,18 @@ class _TccVisionAppState extends State<TccVisionApp> {
 
   @override
   void dispose() {
-    controller.dispose();
+    // CORREÇÃO: Usando ?.
+    controller?.dispose();
     vision.closeYoloModel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!controller.value.isInitialized)
+    // CORREÇÃO: Verificação de nulo no controller
+    if (controller == null || !controller!.value.isInitialized) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     final size = MediaQuery.of(context).size;
     return Scaffold(
       body: GestureDetector(
@@ -268,7 +275,7 @@ class _TccVisionAppState extends State<TccVisionApp> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            CameraPreview(controller),
+            CameraPreview(controller!),
             ...yoloResults.map((res) {
               return Positioned(
                 left: res["box"][0] * (size.width / imageWidthOriginal),
