@@ -1,18 +1,16 @@
+# Versão mínima do iOS
 platform :ios, '13.0'
 
-import_path = File.expand_path(File.join(File.dirname(__FILE__), '..', '..', 'flutter', 'packages', 'flutter_tools', 'bin', 'podhelper.rb'))
-
-if File.exist?(import_path)
-  require import_path
-else  # Fallback para o ambiente do servidor
-  require 'podhelper'
-end
+# O Flutter usa esse arquivo para saber como instalar a Câmera e a IA
+# No Codemagic, ele vai procurar o SDK do Flutter automaticamente
+path_to_utils = File.expand_path(File.join(File.dirname(__FILE__), '..', '..', 'flutter', 'packages', 'flutter_tools', 'bin', 'podhelper.rb'))
+require path_to_utils
 
 target 'Runner' do
   use_frameworks!
   use_test_with_dev_pods = false
 
-  
+  # Instala os plugins (Vision, TTS, Camera)
   flutter_install_all_ios_pods File.dirname(File.expand_path(__FILE__))
 end
 
@@ -20,9 +18,8 @@ post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
     target.build_configurations.each do |config|
-      # Garante compatibilidade total
+      # Garante que o modelo de IA rode sem erros de versão
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
-      config.build_settings['ENABLE_BITCODE'] = 'NO'
     end
   end
 end
