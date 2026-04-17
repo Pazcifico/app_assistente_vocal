@@ -170,7 +170,7 @@ class _TccVisionAppState extends State<TccVisionApp> {
       modelPath: 'assets/best_float32.tflite',
       modelVersion: "yolov8",
       numThreads: 2,
-      useGpu: true,
+      useGpu: false,
     );
 
     controller!.startImageStream((image) {
